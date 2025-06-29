@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, Settings, Play, Pause, Target, Mic, MicOff } from 'lucide-react';
+import { Music, Settings, Play, Pause, Target, Mic, MicOff, Sliders } from 'lucide-react';
 import PitchChart from './components/PitchChart';
 import NoteSelector from './components/NoteSelector';
 import PitchIndicator from './components/PitchIndicator';
+import MicrophoneCalibration from './components/MicrophoneCalibration';
 import { config } from './utils/config';
 
 // Tipos TypeScript
@@ -35,6 +36,7 @@ const App: React.FC = () => {
   const [targetNote, setTargetNote] = useState<Note | null>(null);
   const [availableNotes, setAvailableNotes] = useState<Note[]>([]);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [showCalibration, setShowCalibration] = useState(false);
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -57,7 +59,12 @@ const App: React.FC = () => {
           channelCount: 1,
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: true // Ativar para amplificar o som automaticamente
+          autoGainControl: true,
+          // Configurações específicas para mobile/alta sensibilidade
+          ...(navigator.userAgent.includes('Mobile') && {
+            latency: 0,
+            deviceId: 'default'
+          })
         } 
       });
       
@@ -77,7 +84,7 @@ const App: React.FC = () => {
     }
   };
 
-  // Configurar contexto de áudio
+  // Configurar contexto de áudio com MÁXIMA SENSIBILIDADE
   const setupAudioContext = () => {
     if (!mediaStreamRef.current) return;
 
@@ -85,24 +92,35 @@ const App: React.FC = () => {
       audioContextRef.current = new AudioContext({ sampleRate: 44100 });
       const source = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
       
-      // Adicionar amplificador de ganho para aumentar a sensibilidade
+      // 🚀 SUPER AMPLIFICAÇÃO - Ganho muito mais alto
       const gainNode = audioContextRef.current.createGain();
-      gainNode.gain.value = 5.0; // Amplificar 5x o sinal de entrada
+      gainNode.gain.value = 25.0; // 25x amplificação para móveis!
       
+      // 🔥 COMPRESSOR para amplificar sinais fracos
+      const compressor = audioContextRef.current.createDynamicsCompressor();
+      compressor.threshold.value = -50;
+      compressor.knee.value = 40;
+      compressor.ratio.value = 12;
+      compressor.attack.value = 0;
+      compressor.release.value = 0.25;
+      
+      // 📊 ANALYSER com configurações extremamente sensíveis
       analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 2048; 
-      analyserRef.current.smoothingTimeConstant = 0.1; // Muito responsivo
-      analyserRef.current.minDecibels = -100; // Capturar sons muito baixos
-      analyserRef.current.maxDecibels = -30; // Expandir range dinâmico
+      analyserRef.current.fftSize = 4096; // FFT maior para mais precisão
+      analyserRef.current.smoothingTimeConstant = 0.0; // Sem suavização - máxima responsividade
+      analyserRef.current.minDecibels = -120; // Capturar sussurros
+      analyserRef.current.maxDecibels = -10; // Range expandido
       
-      // Conectar: source -> gain -> analyser
+      // 🔗 CADEIA DE ÁUDIO OTIMIZADA: source → gain → compressor → analyser
       source.connect(gainNode);
-      gainNode.connect(analyserRef.current);
+      gainNode.connect(compressor);
+      compressor.connect(analyserRef.current);
       
-      console.log('🔊 Contexto de áudio configurado!');
+      console.log('🚀 SUPER SENSIBILIDADE ATIVADA!');
       console.log(`📊 Sample Rate: ${audioContextRef.current.sampleRate} Hz`);
       console.log(`📊 FFT Size: ${analyserRef.current.fftSize}`);
-      console.log('🔊 ALTA SENSIBILIDADE: Ganho 5x + Threshold 0.001!');
+      console.log('🔥 CONFIGURAÇÃO MÓVEL: Ganho 25x + Compressor + Threshold 0.00001!');
+      console.log('🎤 Ideal para celulares e sussurros!');
     } catch (error) {
       console.error('❌ Erro ao configurar áudio:', error);
       setMicError('Erro ao configurar captura de áudio.');
@@ -131,11 +149,11 @@ const App: React.FC = () => {
     }
     rms = Math.sqrt(rms / timeData.length);
 
-         // Atualizar indicador de nível de áudio (ajustado para novo ganho)
-     setAudioLevel(Math.min(rms * 50, 100)); // Reduzir multiplicador devido ao ganho
+         // 📊 Atualizar indicador de nível (ajustado para SUPER ganho)
+     setAudioLevel(Math.min(rms * 200, 100)); // Multiplicador alto para mostrar atividade
 
-     // Só processar se há som suficiente (muito sensível agora)
-     if (rms > 0.001) { // Threshold muito baixo para detectar sussurros
+     // 🎤 THRESHOLD EXTREMAMENTE BAIXO - Detecta até respiração!
+     if (rms > 0.00001) { // 100x mais sensível que antes!
        // Método simples de detecção de pitch via autocorrelação
        const frequency = autoCorrelate(timeData, audioContextRef.current?.sampleRate || 44100);
        
@@ -203,7 +221,7 @@ const App: React.FC = () => {
       }
     }
 
-    if (maxPos === -1 || maxVal < 0.1) { // Threshold muito mais baixo
+    if (maxPos === -1 || maxVal < 0.01) { // Threshold SUPER baixo para máxima detecção
       return -1; // Sem pitch detectado
     }
 
@@ -429,33 +447,45 @@ const App: React.FC = () => {
               )}
             </div>
             
-            <button
-              onClick={hasMicPermission ? toggleListening : requestMicrophonePermission}
-              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto ${
-                !hasMicPermission
-                  ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
-                  : isListening 
-                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
-                    : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-              }`}
-            >
-              {!hasMicPermission ? (
-                <>
-                  <Mic className="w-4 h-4 inline-block mr-2" />
-                  Permitir Microfone
-                </>
-              ) : isListening ? (
-                <>
-                  <Pause className="w-4 h-4 inline-block mr-2" />
-                  Parar Captura
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 inline-block mr-2" />
-                  Iniciar Captura
-                </>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={hasMicPermission ? toggleListening : requestMicrophonePermission}
+                className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base flex-1 sm:flex-none ${
+                  !hasMicPermission
+                    ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
+                    : isListening 
+                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                      : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                }`}
+              >
+                {!hasMicPermission ? (
+                  <>
+                    <Mic className="w-4 h-4 inline-block mr-2" />
+                    Permitir Microfone
+                  </>
+                ) : isListening ? (
+                  <>
+                    <Pause className="w-4 h-4 inline-block mr-2" />
+                    Parar Captura
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 inline-block mr-2" />
+                    Iniciar Captura
+                  </>
+                )}
+              </button>
+              
+              {hasMicPermission && (
+                <button
+                  onClick={() => setShowCalibration(true)}
+                  className="px-3 py-2 rounded-lg font-medium transition-colors text-sm bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
+                  title="Calibrar Microfone"
+                >
+                  <Sliders className="w-4 h-4" />
+                </button>
               )}
-            </button>
+            </div>
           </div>
         </div>
 

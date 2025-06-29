@@ -275,11 +275,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    # Usar porta do Railway ou 8000 como fallback
+    port = int(os.environ.get("PORT", 8000))
     
     print("🎵 Iniciando Pitch Training Backend - Versão Demo...")
-    print("📡 WebSocket: ws://localhost:8000/ws")
-    print("🌐 API: http://localhost:8000")
-    print("📋 Notas: http://localhost:8000/notes")
+    print(f"📡 Rodando na porta: {port}")
     print("⚠️  DEMO MODE: Dados simulados (sem captura de áudio real)")
     
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=port) 

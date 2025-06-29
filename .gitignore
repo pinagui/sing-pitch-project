@@ -74,4 +74,12 @@ logs/
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Railway
+.railway/
+*.railway.json
+
+# Deployment
+.env.production
+.env.local 

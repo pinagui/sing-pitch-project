@@ -489,6 +489,13 @@ const App: React.FC = () => {
           </div>
         </div>
 
+        {/* Componente de Calibração */}
+        <MicrophoneCalibration 
+          isVisible={showCalibration} 
+          onClose={() => setShowCalibration(false)}
+          audioLevel={audioLevel}
+        />
+
         {/* Status da Conexão */}
         <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

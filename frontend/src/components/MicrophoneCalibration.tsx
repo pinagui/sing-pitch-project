@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Mic, Volume2, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface MicrophoneCalibrationProps {

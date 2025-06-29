@@ -315,10 +315,12 @@ const App: React.FC = () => {
         }, 3000);
       };
 
-      ws.onerror = (error) => {
-        console.error('Erro WebSocket:', error);
-        setConnectionError('Erro na conexão WebSocket');
-      };
+              ws.onerror = (error) => {
+          console.error('Erro WebSocket:', error);
+          setConnectionError(`Erro na conexão WebSocket: ${
+            config.wsURL.includes('localhost') ? 'Servidor local indisponível' : 'Servidor remoto indisponível'
+          }`);
+        };
 
       wsRef.current = ws;
     } catch (error) {
@@ -664,7 +666,7 @@ const App: React.FC = () => {
                 Stacks Usadas
               </h4>
               
-              <div className="flex flex-wrap justify-center gap-2 text-xs">
+              <div className="flex flex-wrap justify-center gap-2 text-sm">
                 {/* Frontend */}
                 <div className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full">
                   <Zap className="w-3 h-3" />
@@ -708,7 +710,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Descrição técnica */}
-            <div className="text-xs text-gray-500 max-w-2xl mx-auto">
+            <div className="text-sm text-gray-500 max-w-2xl mx-auto">
               Aplicação full-stack para treinamento de afinação vocal em tempo real. 
               Frontend com Web Audio API para captura de microfone, backend Python para processamento de dados, 
               comunicação via WebSocket para latência mínima.

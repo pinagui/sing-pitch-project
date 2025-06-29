@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, Settings, Play, Pause, Target, Mic, MicOff, Sliders } from 'lucide-react';
+import { Music, Settings, Play, Pause, Target, Mic, MicOff, Coffee, Code, Zap } from 'lucide-react';
 import PitchChart from './components/PitchChart';
 import NoteSelector from './components/NoteSelector';
 import PitchIndicator from './components/PitchIndicator';
-import MicrophoneCalibration from './components/MicrophoneCalibration';
 import { config } from './utils/config';
 
 // Tipos TypeScript
@@ -36,7 +35,6 @@ const App: React.FC = () => {
   const [targetNote, setTargetNote] = useState<Note | null>(null);
   const [availableNotes, setAvailableNotes] = useState<Note[]>([]);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [showCalibration, setShowCalibration] = useState(false);
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -447,54 +445,35 @@ const App: React.FC = () => {
               )}
             </div>
             
-            <div className="flex gap-2 w-full sm:w-auto">
-              <button
-                onClick={hasMicPermission ? toggleListening : requestMicrophonePermission}
-                className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base flex-1 sm:flex-none ${
-                  !hasMicPermission
-                    ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
-                    : isListening 
-                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
-                      : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                }`}
-              >
-                {!hasMicPermission ? (
-                  <>
-                    <Mic className="w-4 h-4 inline-block mr-2" />
-                    Permitir Microfone
-                  </>
-                ) : isListening ? (
-                  <>
-                    <Pause className="w-4 h-4 inline-block mr-2" />
-                    Parar Captura
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 inline-block mr-2" />
-                    Iniciar Captura
-                  </>
-                )}
-              </button>
-              
-              {hasMicPermission && (
-                <button
-                  onClick={() => setShowCalibration(true)}
-                  className="px-3 py-2 rounded-lg font-medium transition-colors text-sm bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
-                  title="Calibrar Microfone"
-                >
-                  <Sliders className="w-4 h-4" />
-                </button>
+            <button
+              onClick={hasMicPermission ? toggleListening : requestMicrophonePermission}
+              className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto ${
+                !hasMicPermission
+                  ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
+                  : isListening 
+                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                    : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+              }`}
+            >
+              {!hasMicPermission ? (
+                <>
+                  <Mic className="w-4 h-4 inline-block mr-2" />
+                  Permitir Microfone
+                </>
+              ) : isListening ? (
+                <>
+                  <Pause className="w-4 h-4 inline-block mr-2" />
+                  Parar Captura
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 inline-block mr-2" />
+                  Iniciar Captura
+                </>
               )}
-            </div>
+            </button>
           </div>
         </div>
-
-        {/* Componente de Calibração */}
-        <MicrophoneCalibration 
-          isVisible={showCalibration} 
-          onClose={() => setShowCalibration(false)}
-          audioLevel={audioLevel}
-        />
 
         {/* Status da Conexão */}
         <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 sm:p-6 mb-6">
@@ -667,6 +646,75 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-12 pt-8 border-t border-white/10">
+          <div className="text-center space-y-4">
+            {/* Créditos */}
+            <div className="flex items-center justify-center gap-2 text-gray-300">
+              <span>Desenvolvido com muito</span>
+              <Coffee className="w-5 h-5 text-amber-400" />
+              <span>por um futuro Dev</span>
+            </div>
+
+            {/* Stacks Usadas */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-400 flex items-center justify-center gap-2">
+                <Code className="w-4 h-4" />
+                Stacks Usadas
+              </h4>
+              
+              <div className="flex flex-wrap justify-center gap-2 text-xs">
+                {/* Frontend */}
+                <div className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                  <Zap className="w-3 h-3" />
+                  React 18
+                </div>
+                <div className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                  TypeScript
+                </div>
+                <div className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full">
+                  TailwindCSS
+                </div>
+                <div className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
+                  Vite
+                </div>
+                <div className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full">
+                  Recharts
+                </div>
+                <div className="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full">
+                  Web Audio API
+                </div>
+                
+                {/* Backend */}
+                <div className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full">
+                  Python
+                </div>
+                <div className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full">
+                  FastAPI
+                </div>
+                <div className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full">
+                  WebSockets
+                </div>
+                
+                {/* Deploy */}
+                <div className="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">
+                  Railway
+                </div>
+                <div className="px-3 py-1 bg-gray-500/20 text-gray-300 rounded-full">
+                  GitHub
+                </div>
+              </div>
+            </div>
+
+            {/* Descrição técnica */}
+            <div className="text-xs text-gray-500 max-w-2xl mx-auto">
+              Aplicação full-stack para treinamento de afinação vocal em tempo real. 
+              Frontend com Web Audio API para captura de microfone, backend Python para processamento de dados, 
+              comunicação via WebSocket para latência mínima.
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

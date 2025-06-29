@@ -3,6 +3,7 @@ import { Music, Settings, Play, Pause, Target, Mic, MicOff } from 'lucide-react'
 import PitchChart from './components/PitchChart';
 import NoteSelector from './components/NoteSelector';
 import PitchIndicator from './components/PitchIndicator';
+import { config } from './utils/config';
 
 // Tipos TypeScript
 interface PitchData {
@@ -258,8 +259,8 @@ const App: React.FC = () => {
     }
 
     try {
-      console.log('🔄 Tentando conectar ao WebSocket em ws://localhost:8001/ws');
-      const ws = new WebSocket('ws://localhost:8001/ws');
+      console.log('🔄 Tentando conectar ao WebSocket em', config.wsURL);
+      const ws = new WebSocket(config.wsURL);
       
       ws.onopen = () => {
         console.log('🔗 Conectado ao WebSocket');
@@ -323,7 +324,8 @@ const App: React.FC = () => {
   // Buscar notas disponíveis
   const fetchAvailableNotes = async () => {
     try {
-      const response = await fetch('http://localhost:8001/notes');
+      console.log('📋 Buscando notas disponíveis em:', config.notesURL);
+      const response = await fetch(config.notesURL);
       const data = await response.json();
       setAvailableNotes(data.notes);
     } catch (error) {

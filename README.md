@@ -85,7 +85,7 @@ sing-project/
 Este projeto está configurado para deploy automático no **Railway**. 
 
 ### 🌐 Versão Demo Online
-**[👆 Acesse a Demo Aqui](https://sing-pitch-project.up.railway.app)**
+**[👆 Acesse a Demo Aqui](https://sing-pitch-project-production.up.railway.app)** ✅ **FUNCIONANDO!**
 
 ⚠️ **Importante sobre a versão online:**
 - **Dados simulados**: A versão no Railway usa dados de pitch simulados, não captura áudio real
@@ -139,4 +139,69 @@ Este projeto está configurado para deploy automático no **Railway**.
 - 🎯 **Selecione uma nota alvo** para treinar afinação
 - 📊 **Observe o gráfico** para ver sua estabilidade
 - ✅ **Meta:** manter dentro de ±10 cents da nota alvo
+
+## 📚 Case Study: Evolução das Soluções
+
+Este projeto demonstra **duas abordagens diferentes** para captura e análise de áudio em tempo real, cada uma com seus prós e contras:
+
+### 🐍 **Abordagem 1: Backend Python (main.py)**
+```
+Microfone → SoundDevice → NumPy/Aubio → FFT → WebSocket
+```
+
+**✅ Vantagens:**
+- Processamento robusto com bibliotecas especializadas
+- Maior precisão na análise de frequência
+- Controle total sobre algoritmos de DSP
+
+**❌ Limitações:**
+- Não funciona em servidores na nuvem
+- Dependências de sistema (drivers de áudio)
+- Restrito ao ambiente local
+
+### 🌐 **Abordagem 2: Frontend JavaScript (App.tsx)**
+```
+Microfone → Web Audio API → Autocorrelação → WebSocket
+```
+
+**✅ Vantagens:**
+- Funciona em qualquer lugar (local + nuvem)
+- Sem dependências de sistema
+- Processamento no navegador (privacidade)
+- Menor latência
+
+**❌ Limitações:**
+- Algoritmos mais simples
+- Limitado pela Web Audio API
+- Menos controle fino sobre parâmetros
+
+### 🎯 **Solução Híbrida Implementada:**
+
+O projeto atual usa **ambas as abordagens** de forma inteligente:
+
+1. **Desenvolvimento Local**: 
+   - Frontend conecta em `localhost:8001`
+   - Pode usar backend Python OU JavaScript
+   
+2. **Produção**:
+   - Frontend detecta automaticamente a URL
+   - Usa Web Audio API + WebSocket
+   - Backend processa dados vindos do navegador
+
+### 🔄 **Fluxo de Dados Atual:**
+
+```mermaid
+graph TD
+    A[Microfone do Usuário] --> B[Web Audio API]
+    B --> C[Autocorrelação JS]
+    C --> D[WebSocket]
+    D --> E[Backend FastAPI]
+    E --> F[Conversão Freq→Nota]
+    F --> G[WebSocket Response]
+    G --> H[Interface React]
+```
+
+**Resultado**: App funciona **100% na nuvem** com microfone real! 🎉
+
+## 🚀 Deploy na Nuvem (Railway)
 

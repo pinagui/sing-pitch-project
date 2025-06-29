@@ -12,6 +12,9 @@ import random
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 
 class NoteConverter:
@@ -204,15 +207,23 @@ app.add_middleware(
 # Gerenciador de conexões
 manager = ConnectionManager()
 
+# Configurar arquivos estáticos do frontend
+frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(frontend_build_path):
+    app.mount("/static", StaticFiles(directory=frontend_build_path), name="static")
+    print(f"📁 Frontend encontrado em: {frontend_build_path}")
+else:
+    print(f"⚠️ Frontend não encontrado em: {frontend_build_path}")
 
-@app.get("/")
-async def root():
-    """Endpoint raiz"""
+
+@app.get("/api")
+async def api_root():
+    """Endpoint da API"""
     return {
         "message": "🎵 Pitch Training Backend está rodando!",
         "version": "1.0.0",
-        "mode": "demo",
-        "info": "Esta é uma versão demo com dados simulados. Para usar com microfone real, rode localmente."
+        "mode": "hybrid",
+        "info": "Backend híbrido: aceita dados simulados e dados reais do frontend via WebSocket."
     }
 
 
@@ -255,15 +266,45 @@ async def websocket_endpoint(websocket: WebSocket):
     
     try:
         while True:
-            # Manter conexão viva
+            # Receber dados do cliente
             data = await websocket.receive_text()
             
-            # Processar comandos do cliente se necessário
             try:
                 command = json.loads(data)
-                if command.get("type") == "ping":
+                
+                # Processar dados de áudio vindos do frontend
+                if command.get("type") == "audio_data":
+                    frequency = command.get("frequency", 0)
+                    amplitude = command.get("amplitude", 0)
+                    
+                    if frequency > 80 and frequency < 2000:  # Frequências válidas
+                        # Converter para nota musical
+                        note_info = NoteConverter.frequency_to_note(frequency)
+                        
+                        # Preparar resposta
+                        response_data = {
+                            "type": "pitch_data",
+                            "pitch": frequency,
+                            "note": note_info["note"],
+                            "octave": note_info["octave"],
+                            "cents": note_info["cents"],
+                            "frequency": note_info["frequency"],
+                            "timestamp": time.time(),
+                            "demo": False,  # Dados reais do frontend
+                            "amplitude": amplitude
+                        }
+                        
+                        # Enviar de volta para o cliente
+                        await websocket.send_text(json.dumps(response_data))
+                        
+                        # Parar dados simulados quando receber dados reais
+                        if manager.is_broadcasting:
+                            manager.stop_broadcasting()
+                
+                elif command.get("type") == "ping":
                     await websocket.send_text(json.dumps({"type": "pong"}))
-            except:
+                    
+            except json.JSONDecodeError:
                 pass
                 
     except WebSocketDisconnect:
@@ -271,6 +312,40 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Erro WebSocket: {e}")
         manager.disconnect(websocket)
+
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    """Servir frontend React para todas as rotas não-API"""
+    
+    # Rotas da API não devem servir o frontend
+    if full_path.startswith(("api", "ws", "notes", "status")) or full_path == "":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Use /api, /notes, /status, or /ws")
+    
+    frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+    
+    # Se existe o arquivo específico, servir ele
+    file_path = os.path.join(frontend_build_path, full_path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    
+    # Caso contrário, servir o index.html (para React Router)
+    index_path = os.path.join(frontend_build_path, "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
+    
+    # Se não existe frontend buildado, retornar mensagem
+    return {
+        "message": "Frontend não encontrado. Execute 'npm run build' no diretório frontend/",
+        "api_available": True,
+        "endpoints": {
+            "api": "/",
+            "notes": "/notes", 
+            "status": "/status",
+            "websocket": "/ws"
+        }
+    }
 
 
 if __name__ == "__main__":

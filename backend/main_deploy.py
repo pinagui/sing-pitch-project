@@ -195,10 +195,16 @@ app = FastAPI(
     description="Backend para treinamento de afinação vocal - Versão Demo"
 )
 
-# Configurar CORS
+# Configurar CORS para Vercel + local
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173", 
+        "https://*.vercel.app",
+        "https://*.netlify.app",
+        "*"  # Para desenvolvimento
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -207,24 +213,10 @@ app.add_middleware(
 # Gerenciador de conexões
 manager = ConnectionManager()
 
-# Configurar arquivos estáticos do frontend
-frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
-if os.path.exists(frontend_build_path):
-    app.mount("/static", StaticFiles(directory=frontend_build_path), name="static")
-    print(f"📁 Frontend encontrado em: {frontend_build_path}")
-else:
-    print(f"⚠️ Frontend não encontrado em: {frontend_build_path}")
+# Backend-only mode - sem arquivos estáticos
 
 
-@app.get("/api")
-async def api_root():
-    """Endpoint da API"""
-    return {
-        "message": "🎵 Pitch Training Backend está rodando!",
-        "version": "1.0.0",
-        "mode": "hybrid",
-        "info": "Backend híbrido: aceita dados simulados e dados reais do frontend via WebSocket."
-    }
+
 
 
 @app.get("/notes")
@@ -314,36 +306,22 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 
-@app.get("/{full_path:path}")
-async def serve_frontend(full_path: str):
-    """Servir frontend React para todas as rotas não-API"""
-    
-    # Rotas da API não devem servir o frontend
-    if full_path.startswith(("api", "ws", "notes", "status")) or full_path == "":
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Use /api, /notes, /status, or /ws")
-    
-    frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
-    
-    # Se existe o arquivo específico, servir ele
-    file_path = os.path.join(frontend_build_path, full_path)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
-    
-    # Caso contrário, servir o index.html (para React Router)
-    index_path = os.path.join(frontend_build_path, "index.html")
-    if os.path.isfile(index_path):
-        return FileResponse(index_path)
-    
-    # Se não existe frontend buildado, retornar mensagem
+@app.get("/")
+async def root():
+    """Endpoint raiz da API"""
     return {
-        "message": "Frontend não encontrado. Execute 'npm run build' no diretório frontend/",
-        "api_available": True,
+        "message": "🎵 Pitch Training Backend API está rodando!",
+        "version": "1.0.0",
+        "mode": "backend-only",
+        "info": "Backend API para processar dados de pitch em tempo real",
         "endpoints": {
-            "api": "/",
-            "notes": "/notes", 
-            "status": "/status",
+            "notes": "/notes",
+            "status": "/status", 
             "websocket": "/ws"
+        },
+        "frontend": {
+            "message": "Frontend deve ser hospedado separadamente (Vercel/Netlify)",
+            "cors": "Configurado para aceitar requests de qualquer origem"
         }
     }
 

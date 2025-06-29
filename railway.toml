@@ -1,5 +1,4 @@
 [build]
-buildCommand = "chmod +x build.sh && ./build.sh"
 
 [deploy]
-startCommand = "python start_railway.py" 
+startCommand = "python backend/main_deploy.py" 

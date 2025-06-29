@@ -85,12 +85,13 @@ sing-project/
 Este projeto está configurado para deploy automático no **Railway**. 
 
 ### 🌐 Versão Demo Online
-**[👆 Acesse a Demo Aqui](https://sing-pitch-project-production.up.railway.app)** ✅ **FUNCIONANDO!**
+**[👆 Acesse a Demo Aqui](https://sing-pitch-project-production.up.railway.app)** ✅ **FUNCIONANDO COM MICROFONE REAL!**
 
-⚠️ **Importante sobre a versão online:**
-- **Dados simulados**: A versão no Railway usa dados de pitch simulados, não captura áudio real
-- **Limitação da nuvem**: Servidores na nuvem não têm acesso ao seu microfone
-- **Para uso real**: Execute o projeto localmente para usar seu microfone
+🎤 **Funcionalidade COMPLETA na nuvem:**
+- **✅ Microfone real**: Captura áudio via Web Audio API no navegador
+- **✅ Análise em tempo real**: Processamento de pitch em JavaScript + Python
+- **✅ Interface completa**: Gráficos, seletor de notas, indicador de afinação
+- **✅ Zero instalação**: Funciona direto no navegador
 
 
 ## 🛠️ Tecnologias

@@ -80,6 +80,19 @@ sing-project/
 - **📡 WebSocket:** ws://localhost:8001/ws
 - **📋 Notas Disponíveis:** http://localhost:8001/notes
 
+## 🚀 Deploy na Nuvem (Railway)
+
+Este projeto está configurado para deploy automático no **Railway**. 
+
+### 🌐 Versão Demo Online
+**[👆 Acesse a Demo Aqui](https://sing-pitch-project.up.railway.app)**
+
+⚠️ **Importante sobre a versão online:**
+- **Dados simulados**: A versão no Railway usa dados de pitch simulados, não captura áudio real
+- **Limitação da nuvem**: Servidores na nuvem não têm acesso ao seu microfone
+- **Para uso real**: Execute o projeto localmente para usar seu microfone
+
+
 ## 🛠️ Tecnologias
 
 ### Backend (Python)

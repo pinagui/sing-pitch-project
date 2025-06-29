@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply h-full;
+    font-size: 16px; /* Base font size for rem calculations */
+  }
+  
+  body {
+    @apply h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
+  }
+
+  #root {
+    @apply h-full;
+  }
+
+  /* Improve text readability on mobile */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl;
+  }
+  
+  .note-display {
+    @apply text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-music-primary to-music-secondary bg-clip-text text-transparent;
+  }
+  
+  .frequency-display {
+    @apply text-xl sm:text-2xl font-medium text-gray-300;
+  }
+  
+  .pitch-indicator {
+    @apply w-full h-3 sm:h-4 bg-gray-700 rounded-full overflow-hidden;
+  }
+  
+  .pitch-bar {
+    @apply h-full transition-all duration-200 ease-out;
+  }
+
+  /* Responsive button styles */
+  .btn-responsive {
+    @apply px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base;
+  }
+
+  /* Responsive card styles */
+  .card-responsive {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 sm:p-6;
+  }
+
+  /* Responsive text styles */
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+}
+
+@layer utilities {
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    to {
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.3);
+    }
+  }
+
+  /* Mobile-friendly touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Safe area for mobile devices with notches */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Responsive spacing utilities */
+  .space-y-responsive > :not([hidden]) ~ :not([hidden]) {
+    @apply mt-3 sm:mt-4 lg:mt-6;
+  }
+
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+} 
